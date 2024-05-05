@@ -1,0 +1,697 @@
+<html>
+
+<head>
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/litegraph.js@0.7.5/css/litegraph.css">
+
+
+    <style>
+.graphdialog textarea {
+    margin: 3px;
+    min-width: 60px;
+    min-height: 1.5em;
+    background-color: black;
+    border: 0;
+    color: white;
+    padding-left: 10px;
+    outline: none;
+    height:320px;
+    width: 640px;
+}
+
+
+.litegraph-editor {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    background-color: #f0f0f0;
+    color: #eee;
+    font: 14px Tahoma;
+
+    position: relative;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0px;
+}
+
+canvas {
+    display: block;
+    border: 0px solid;
+}
+    </style>
+
+    <script type="text/javascript" src="https://unpkg.com/litegraph.js@0.7.5/build/litegraph.js"></script>
+
+    <script>
+const defaultPythonDefinition = `def python_node(state):
+    question = state.get('question', '').strip()
+    result = process(question)
+    return {"result": result}
+`
+
+function LangGraphNode() {
+    LiteGraph.LGraphNode.call(this);
+    const self = this;
+
+    this.addInput("input", "StateDict");
+    this.addOutput("output", "StateDict");
+
+    this.addProperty("name", "python_node", "string");
+    // this.addProperty("entry_point", false, "boolean");
+    // this.addProperty("python_definition", defaultPythonDefinition, "string");
+
+    this.name = this.addWidget(
+        "text",
+        "name",
+        "python_node",
+        function (v) {
+            self.properties.name = v;
+        },
+    );
+
+    // this.entry_point = this.addWidget(
+    //     "combo",
+    //     "entry_point",
+    //     "false",
+    //     function (v) {
+    //         self.properties.entry_point = v;
+    //     },
+    //     { values: ['true', 'false'] }
+    // );
+
+    // this.python_definition = this.addWidget(
+    //     "text",
+    //     "python_definition",
+    //     defaultPythonDefinition,
+    //     function (v) {
+    //         self.properties.python_definition = v;
+    //     },
+    //     { multiline: true }
+    // );
+
+    this.title = "LangGraph Node";
+    this.desc = "Custom Node with Definition";
+    // this.size = [320, 120];
+
+    this.additionalOutputs = 1;
+    this.additionalInputs = 1;
+}
+
+LangGraphNode.prototype = Object.create(LiteGraph.LGraphNode.prototype);
+
+LangGraphNode.prototype.addOutputPort = function() {
+    // Increment the number of additional outputs
+    this.additionalOutputs++;
+
+    // Add a new output port
+    this.addOutput("output_" + this.additionalOutputs, "StateDict");
+
+    // Reconfigure the node
+    this.configure(this.serialize());
+    // this.size = [320, 120];
+};
+
+// Add a method to dynamically remove an output
+LangGraphNode.prototype.removeOutputPort = function() {
+    if (this.additionalOutputs > 1) {
+        // Remove the last output port
+        this.removeOutput(this.outputs.length - 1);
+        // Decrement the number of additional outputs
+        this.additionalOutputs--;
+
+        // Reconfigure the node
+        this.configure(this.serialize());
+        // this.size = [320, 120];
+    }
+};
+
+LangGraphNode.prototype.addInputPort = function() {
+    // Increment the number of additional inputs
+    this.additionalInputs++;
+
+    // Add a new output port
+    this.addInput("input_" + this.additionalInputs, "StateDict");
+
+    // Reconfigure the node
+    this.configure(this.serialize());
+    // this.size = [320, 120];
+};
+
+// Add a method to dynamically remove an output
+LangGraphNode.prototype.removeInputPort = function() {
+    if (this.additionalInputs > 1) {
+        // Remove the last input port
+        this.removeInput(this.inputs.length - 1);
+        // Decrement the number of additional outputs
+        this.additionalInputs--;
+
+        // Reconfigure the node
+        this.configure(this.serialize());
+        //this.size = [320, 120];
+    }
+};
+
+/*
+
+LangGraphNode.prototype.onContextMenu = function(menu, options) {
+    const self = this;
+
+    // Add default menu items for node properties
+    this.addContextMenuNodeProperties(menu);
+
+    // Add a separator
+    menu.addSeparator();
+
+
+    menu.addItem("Add Input", null, function() {
+        self.addInputPort();
+    });
+
+    if (this.additionalInputs > 0) {
+        menu.addItem("Remove Input", null, function() {
+            self.removeInputPort();
+        });
+    }
+
+    menu.addItem("Add Output", null, function() {
+        self.addOutputPort();
+    });
+
+    if (this.additionalOutputs > 0) {
+        menu.addItem("Remove Output", null, function() {
+            self.removeOutputPort();
+        });
+    }
+}; */
+
+
+LiteGraph.registerNodeType("langgraph/LangGraphNode", LangGraphNode);
+
+// const defaultDecisionPythonDefinition = `def decide(state):
+//     condition = state.get("condition")
+//     if condition:
+//         return "go_true"
+//     else:
+//         return "go_false"
+// `
+
+function LangGraphDecisionNode() {
+    LiteGraph.LGraphNode.call(this);
+
+    const self = this;
+
+    this.addInput("input_1", "StateDict");
+    this.addOutput("output_1", "StateDict");
+    this.addOutput("output_2", "StateDict");
+
+    this.addProperty("name", "decide", "string");
+    // this.addProperty("python_definition", defaultDecisionPythonDefinition, "string");
+    // this.addProperty("entry_point", false, "boolean");
+
+    this.name = this.addWidget(
+        "text",
+        "name",
+        "decide",
+        function (v) {
+            self.properties.name = v;
+        },
+    );
+
+    // this.entry_point = this.addWidget(
+    //     "combo",
+    //     "entry_point",
+    //     "false",
+    //     function (v) {
+    //         self.properties.entry_point = v;
+    //     },
+    //     { values: ['true', 'false'] }
+    // );
+    
+    // this.python_definition = this.addWidget(
+    //     "text",
+    //     "python_definition",
+    //     defaultDecisionPythonDefinition,
+    //     function (v) {
+    //         self.properties.python_definition = v;
+    //     },
+    //     { multiline: true }
+    // );
+
+    this.title = "LangGraphDecision Node";
+    this.desc = "Custom Node with Decision";
+    // this.size = [320, 120];
+    this.additionalOutputs = 2;
+    this.additionalInputs = 1;
+}
+
+LangGraphDecisionNode.prototype = Object.create(LiteGraph.LGraphNode.prototype);
+
+LangGraphDecisionNode.prototype.addOutputPort = function() {
+    // Increment the number of additional outputs
+    this.additionalOutputs++;
+
+    // Add a new output port
+    this.addOutput("output_" + this.additionalOutputs, "StateDict");
+
+    // Reconfigure the node
+    this.configure(this.serialize());
+    // this.size = [320, 120];
+};
+
+LangGraphDecisionNode.prototype.removeOutputPort = function() {
+    if (this.additionalOutputs > 2) {
+        // Remove the last output port
+        this.removeOutput(this.outputs.length - 1);
+        // Decrement the number of additional outputs
+        this.additionalOutputs--;
+
+        // Reconfigure the node
+        this.configure(this.serialize());
+        // this.size = [320, 120];
+    }
+};
+
+LangGraphDecisionNode.prototype.addInputPort = function() {
+    this.additionalInputs++;
+    this.addInput("input_" + this.additionalInputs, "StateDict");
+    this.configure(this.serialize());
+    // this.size = [320, 120];
+};
+
+LangGraphDecisionNode.prototype.removeInputPort = function() {
+    if (this.additionalInputs > 1) {
+        this.removeInput(this.inputs.length - 1);
+        this.additionalInputs--;
+        this.configure(this.serialize());
+        // this.size = [320, 120];
+    }
+};
+
+LangGraphDecisionNode.prototype.onContextMenu = function(menu, options) {
+    const self = this;
+
+    // Add default menu items for node properties
+    this.addContextMenuNodeProperties(menu);
+
+    // Add a separator
+    menu.addSeparator();
+
+
+    menu.addItem("Add Input", null, function() {
+        self.addInputPort();
+    });
+
+    if (this.additionalOutputs > 0) {
+        menu.addItem("Remove Input", null, function() {
+            self.removeInputPort();
+        });
+    }
+
+    menu.addItem("Add Output", null, function() {
+        self.addOutputPort();
+    });
+
+    if (this.additionalOutputs > 0) {
+        menu.addItem("Remove Output", null, function() {
+            self.removeOutputPort();
+        });
+    }
+};
+
+LiteGraph.registerNodeType("langgraph/LangGraphDecisionNode", LangGraphDecisionNode);
+
+function LangGraphEndNode() {
+    LiteGraph.LGraphNode.call(this);
+
+    const self = this;
+
+    this.addInput("input", "StateDict");
+    this.addProperty("END", "decide", "string");
+
+    this.name = this.addWidget(
+        "text",
+        "name",
+        "END",
+        function (v) {
+            self.properties.name = v;
+        },
+    );
+
+    this.title = "LangGraph END Node";
+    this.desc = "Custom Node with Decision";
+    // this.size = [320, 120];
+    this.additionalInputs = 1;
+}
+LangGraphEndNode.prototype = Object.create(LiteGraph.LGraphNode.prototype);
+
+
+
+LangGraphEndNode.prototype.addOutputPort = function() {
+};
+
+// Add a method to dynamically remove an output
+LangGraphEndNode.prototype.removeOutputPort = function() {
+    
+};
+
+LangGraphEndNode.prototype.addInputPort = function() {
+    // Increment the number of additional inputs
+    this.additionalInputs++;
+
+    // Add a new output port
+    this.addInput("input_" + this.additionalInputs, "StateDict");
+
+    // Reconfigure the node
+    this.configure(this.serialize());
+    // this.size = [320, 120];
+};
+
+// Add a method to dynamically remove an output
+LangGraphEndNode.prototype.removeInputPort = function() {
+    if (this.additionalInputs > 1) {
+        // Remove the last input port
+        this.removeInput(this.inputs.length - 1);
+        // Decrement the number of additional outputs
+        this.additionalInputs--;
+
+        // Reconfigure the node
+        this.configure(this.serialize());
+        // this.size = [320, 120];
+    }
+};
+
+LangGraphEndNode.prototype.onContextMenu = function(menu, options) {
+    const self = this;
+
+    // Add default menu items for node properties
+    this.addContextMenuNodeProperties(menu);
+
+    // Add a separator
+    menu.addSeparator();
+
+
+    menu.addItem("Add Input", null, function() {
+        self.addInputPort();
+    });
+
+    if (this.additionalInputs > 0) {
+        menu.addItem("Remove Input", null, function() {
+            self.removeInputPort();
+        });
+    }
+};
+
+LiteGraph.registerNodeType("langgraph/LangGraphEndNode", LangGraphEndNode);
+
+
+
+const oldGetNodeMenuOptions = LGraphCanvas.prototype.getNodeMenuOptions;
+
+LGraphCanvas.prototype.getNodeMenuOptions = function(node) {
+    const self = this;
+
+    const options = oldGetNodeMenuOptions.call(this, node);
+    options.push(null); // Separator
+
+
+    options.push({
+        content: "Add Input",
+        callback: function() {
+            node.addInputPort();
+            self.setDirty(true);
+        }
+    });
+
+    if (node.additionalInputs > 0) {
+        options.push({
+            content: "Remove Input",
+            callback: function() {
+                node.removeInputPort();
+                self.setDirty(true);
+            }
+        });
+    }
+
+    options.push({
+        content: "Add Output",
+        callback: function() {
+            node.addOutputPort();
+            self.setDirty(true);
+        }
+    });
+
+    if (node.additionalOutputs > 0) {
+        options.push({
+            content: "Remove Output",
+            callback: function() {
+                node.removeOutputPort();
+                self.setDirty(true);
+            }
+        });
+    }
+
+    return options;
+};
+
+
+LGraphCanvas.onCompile = function(info, entry, mouse_event) {
+    var g = graph.serialize();
+    var code = 'from langgraph.graph import END, StateGraph\n';
+    code += 'workflow = StateGraph(GraphState)';
+
+    code += '\n\n# Define the nodes\n';
+    for (var nodeOrderId=0;nodeOrderId<g.nodes.length;nodeOrderId++) {
+        if (g.nodes[nodeOrderId].type != "langgraph/LangGraphNode")
+            continue;
+        code += `workflow.add_node("${g.nodes[nodeOrderId].properties.name}", ${g.nodes[nodeOrderId].properties.name}) # ${g.nodes[nodeOrderId].properties.name}\n`
+    }
+
+    code += '\n# Build graph\n';
+    for (var nodeOrderId=0;nodeOrderId<g.nodes.length;nodeOrderId++) {
+        if (g.nodes[nodeOrderId].type == "langgraph/LangGraphEndNode")
+            continue;
+
+        var methodName = "";
+        var isEntryPoint = isNodeEntryPoint(g, nodeOrderId);
+
+        var methodName = "";
+        if (g.nodes[nodeOrderId].type == "langgraph/LangGraphNode") {
+            if (isEntryPoint) {
+                methodName = "workflow.set_entry_point";
+                code += `${methodName}("${g.nodes[nodeOrderId].properties.name}")\n`;
+            }
+
+            var nextNodeNames = getNodeValues(g, nodeOrderId, "next", "name");
+            var nextNodeTypes = getNodeValues(g, nodeOrderId, "next", "type");
+
+            var currNodeName = g.nodes[nodeOrderId].properties.name;
+            if (nextNodeNames.length > 0 && nextNodeTypes[0] == "langgraph/LangGraphNode"){
+                methodName = "workflow.add_edge";
+                var nextNodeText = getNextNodeText(nextNodeNames[0]);
+                code += `${methodName}("${currNodeName}", ${nextNodeText})\n`
+            }
+            
+        } else {
+            var nextNodeNames = getNodeValues(g, nodeOrderId, "next", "name");
+            var currNodeName = g.nodes[nodeOrderId].properties.name;
+            var conditionalEdgeMapping = "";
+            for (var i=0;i<nextNodeNames.length;i++) {
+                var nextNodeName = nextNodeNames[i];
+                var nextNodeText = getNextNodeText(nextNodeNames[i]);
+                conditionalEdgeMapping += (nextNodeName == 'END')?`        "end": ${nextNodeText}, \n`: `        ${nextNodeName}: ${nextNodeName}, \n`;
+            }            
+            if (isEntryPoint) {
+                methodName = "workflow.set_conditional_entry_point";
+                code += `${methodName}(
+    ${currNodeName},
+    {
+${conditionalEdgeMapping}
+    })\n`;
+            } else {
+                var prevNodeNames = getNodeValues(g, nodeOrderId, "prev", "name");
+                methodName = `workflow.add_conditional_edge`;
+                code += `${methodName}(
+    ${prevNodeNames[0]},
+    ${currNodeName},
+    {
+${conditionalEdgeMapping}
+    })\n`;
+            }
+        }
+    }
+
+    code += "\n# Compile\n";
+    code += "app = workflow.compile()";
+    // console.log(code);
+    return code;
+}
+
+function getNextNodeText(nextNodeName) {
+    var nextNodeText = (nextNodeName == 'END') ? nextNodeName : `"${nextNodeName}"`;
+    return nextNodeText;
+}
+
+function isNodeEntryPoint(g, nodeOrderId) {
+    var entryPoint = 0;
+    for (var j = 0; j < g.nodes[nodeOrderId].inputs.length; j++) {
+        if (g.nodes[nodeOrderId].inputs[j].link != null) {
+            entryPoint++;
+        }
+    }
+    entryPoint = entryPoint == 0;
+    return entryPoint;
+}
+
+function getNodeValues(g, nodeOrderId, direction="next", key="name") {
+    var nodeValues = [];
+    // next or prev
+    var ports = (direction == "next")? g.nodes[nodeOrderId].outputs: g.nodes[nodeOrderId].inputs;
+
+    for (var j =0;j<ports.length; j++) {
+        if (direction == "next" && (ports[j].links == null || ports[j].links.length == 0))
+            continue
+        if (direction == "prev" && ports[j].link == null)
+            continue
+
+        var linkOrderId = -1;
+        var linkId = -1;
+        if (direction == "next") {
+            linkId = ports[j].links[0];
+        } else {
+            linkId = ports[j].link;
+        }
+        // get linkOrderId
+        for (var k=0;k<g.links.length;k++) {
+            if (g.links[k][0] == linkId) {
+                linkOrderId = k;
+                break
+            }
+        }
+        
+
+        if (g.links[linkOrderId][0] == linkId) {
+            var targetId = (direction == "next")?g.links[linkOrderId][3]:g.links[linkOrderId][1];
+            for (var k=0;k<g.nodes.length; k++) {
+                if (g.nodes[k].id == targetId) {
+                    var output = `"${g.nodes[k].properties.name}"`;
+                    if (g.nodes[k].type == "langgraph/LangGraphEndNode") {
+                        output = "END";
+                    }
+                    if (key=="name") {
+                        nodeValues.push(output);
+                    } else {
+                        nodeValues.push(g.nodes[k].type);
+                    }
+                    break;
+                }
+            }
+        }
+        
+    }
+    return nodeValues;
+}
+
+LGraphCanvas.prototype.getCanvasMenuOptions = function() {
+    var options = null;
+    var that = this;
+    if (this.getMenuOptions) {
+        options = this.getMenuOptions();
+    } else {
+        options = [
+            {
+                content: "Add Node",
+                has_submenu: true,
+                callback: LGraphCanvas.onMenuAdd
+            },
+            { content: "Add Group", callback: LGraphCanvas.onGroupAdd },
+            { content: "Compile", callback: LGraphCanvas.onCompile},
+            //{ content: "Arrange", callback: that.graph.arrange },
+            //{content:"Collapse All", callback: LGraphCanvas.onMenuCollapseAll }
+        ];
+        /*if (LiteGraph.showCanvasOptions){
+            options.push({ content: "Options", callback: that.showShowGraphOptionsPanel });
+        }*/
+
+        if (Object.keys(this.selected_nodes).length > 1) {
+            options.push({
+                content: "Align",
+                has_submenu: true,
+                callback: LGraphCanvas.onGroupAlign,
+            })
+        }
+
+        if (this._graph_stack && this._graph_stack.length > 0) {
+            options.push(null, {
+                content: "Close subgraph",
+                callback: this.closeSubgraph.bind(this)
+            });
+        }
+    }
+
+    if (this.getExtraMenuOptions) {
+        var extra = this.getExtraMenuOptions(this, options);
+        if (extra) {
+            options = options.concat(extra);
+        }
+    }
+
+    return options;
+};
+
+function clearMenu() {
+    const registeredNodes = Object.keys(LiteGraph.registered_node_types);
+    for (var i = 0; i < registeredNodes.length; i++) {
+        if (!registeredNodes[i].toLowerCase().startsWith("langgraph")) {
+            LiteGraph.unregisterNodeType(registeredNodes[i]);
+        }
+    }
+}
+
+function setupEditorCanvas() {
+    var editor = document.getElementById('editor');
+
+    const ratio = window.devicePixelRatio;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    editor.width = width;
+    editor.height = height;
+
+    //editor.width = width * ratio;
+    //editor.height = height * ratio;
+    editor.style.width = width + "px";
+    editor.style.height = height + "px";
+    
+}
+
+    </script>
+
+</head>
+
+<body style="margin:0px">
+    <canvas id='editor' width='1024' height='720' style='border: 0px solid'></canvas>
+    <script>
+        var graph = new LGraph();
+        var canvas = new LGraphCanvas("#editor", graph);
+        setupEditorCanvas(canvas);
+        clearMenu();
+        
+        // canvas.background_image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAAAAABVicqIAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF7WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjQtMDUtMDRUMjI6MTQ6MjQrMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI0LTA1LTA0VDIyOjE4OjMxKzA4OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI0LTA1LTA0VDIyOjE4OjMxKzA4OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMSIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9IkRvdCBHYWluIDIwJSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozZTBlMDQxYS1lZDQ0LTQ3MzYtYTI2Ny02YWZhZGQyMDMxOGQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6ZWE4NjM4NDMtODMwNC00YTY1LTk2Y2ItYmM2OWU1YWNjNzQyIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6ZWE4NjM4NDMtODMwNC00YTY1LTk2Y2ItYmM2OWU1YWNjNzQyIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDplYTg2Mzg0My04MzA0LTRhNjUtOTZjYi1iYzY5ZTVhY2M3NDIiIHN0RXZ0OndoZW49IjIwMjQtMDUtMDRUMjI6MTQ6MjQrMDg6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE5IChNYWNpbnRvc2gpIi8+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDozZTBlMDQxYS1lZDQ0LTQ3MzYtYTI2Ny02YWZhZGQyMDMxOGQiIHN0RXZ0OndoZW49IjIwMjQtMDUtMDRUMjI6MTg6MzErMDg6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE5IChNYWNpbnRvc2gpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PhzJwQYAAAK0SURBVGiB1VpRcuswCIRMXu9/Vn/2paEfsS1srxEI4rZMOkMkA44kYEHliaIkHJW4k3wRMQkRyzLYuNtz+Xp7HmdnjkmUhJC02dffnej/PP1vYRT34RyzuZv9Q8Uc865bx0j8FVJGwru9MdK20VTtfWtsZNVjr3+GBvYkvnA39LKZ9UdaeKLH6l5MQtgplaAeY9k9omVXrXInsZyxw336nkv5iZc6RzhDTV/nCGeo6btouYoJLXq5EbToKSMDod4WQbPeo8ITPVa+5+9nOprft4SstWmPd/pvnCvaeHupYRSOk533b9XRBB/hRD7xH+H1STufe49wx+PtzfFuXbnHe6k8n0BgpXI8w0MgxETC0pDAJiYwkUBJFTDu9HR4PEvS4z2rJGUwtVEm4mIj5isyMJlCkGfvv/8N8d8E0Uo1bimKwj0j4SUe2ZOw6njNyBM9Xr45F8qbRM9taBUQ/X2PA3YwYSaM6j8B10rsMBYYiMIjR9hJdtlqj3WM2NnSO/YbUP0bS+zqmgsacYNgt5HEitiiuzr+xW1E5igA1ejqHUntnz7x+FOOZQT9Bzd+bG0vauCEVRfFrj95hGH6rcFduu0BpFGCzSFIJ2VCpa7jSbnsweNnNz9C+4PGXTTYenw8d0MJgA/c5Ryi8g43Im835o29+qLO3Y95/A+2PS4g99WGFy0iOnTu1BTeraXoPwSDg9TKDnTu3JEBebyX3ojqvVTUfEaHwUYAA86ISnFbCezcVVMq1PuNXNssiPfqTyV2E4vHH+7Z5mmhtcJHM9I+8IEXqc5dPMf7b+fCd1qX3Jim+l1eNb+1dMi0x91AIhNMysFdOaqv7gvzJF8LC4tzDe/PynrIq55f559j3ng7Fw+VNrmr3/hlVMdIjeEBI7bhosvMTNB0o/rc/UmY4mcvhbu8s99W+0Xy/jrHPAAAAABJRU5ErkJggg==';
+        graph.start();
+    </script>
+</body>
+
+</html>
