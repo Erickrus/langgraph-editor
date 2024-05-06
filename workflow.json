@@ -1,0 +1,219 @@
+{
+  "last_node_id": 5,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 5,
+      "type": "langgraph/LangGraphEndNode",
+      "pos": {
+        "0": 760,
+        "1": 82,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "size": {
+        "0": 210,
+        "1": 78
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input",
+          "type": "StateDict",
+          "link": 1
+        },
+        {
+          "name": "input_2",
+          "type": "StateDict",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "title": "LangGraph END Node",
+      "properties": {
+        "END": "decide"
+      }
+    },
+    {
+      "id": 3,
+      "type": "langgraph/LangGraphConditionalNode",
+      "pos": {
+        "0": 339,
+        "1": 89,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "size": {
+        "0": 210,
+        "1": 78
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input_1",
+          "type": "StateDict",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output_1",
+          "type": "StateDict",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "output_2",
+          "type": "StateDict",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "title": "LangGraphConditional Node",
+      "properties": {
+        "name": "decide"
+      }
+    },
+    {
+      "id": 2,
+      "type": "langgraph/LangGraphNode",
+      "pos": {
+        "0": 54,
+        "1": 87,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "size": {
+        "0": 210,
+        "1": 58
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input",
+          "type": "StateDict",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "StateDict",
+          "links": [
+            4
+          ]
+        }
+      ],
+      "title": "LangGraph Node",
+      "properties": {
+        "name": "query"
+      }
+    },
+    {
+      "id": 4,
+      "type": "langgraph/LangGraphNode",
+      "pos": {
+        "0": 522,
+        "1": 294,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "size": {
+        "0": 210,
+        "1": 58
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input",
+          "type": "StateDict",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "StateDict",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "title": "LangGraph Node",
+      "properties": {
+        "name": "web_search"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      3,
+      0,
+      5,
+      0,
+      "StateDict"
+    ],
+    [
+      2,
+      4,
+      0,
+      5,
+      1,
+      "StateDict"
+    ],
+    [
+      3,
+      3,
+      1,
+      4,
+      0,
+      "StateDict"
+    ],
+    [
+      4,
+      2,
+      0,
+      3,
+      0,
+      "StateDict"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "version": 0.4
+}
