@@ -5,7 +5,7 @@ Below is the interface of the tool. It is based on litegraph.js as its workflow 
 3 types of nodes are added, including LangGraphNode, LangGraphConditionalNode, and LangGraphEndNode.
 When you finish editing the workflow, click "Compile" menu item to your design as a python file.
 
-The workflow can be saved or loaded locally as /content/workflow.json.
+The workflow can be loaded/saved locally from/to /content/workflow.json.
 
 <img src="https://raw.githubusercontent.com/Erickrus/langgraph-editor/main/snapshot.png" width=1080px />
 
