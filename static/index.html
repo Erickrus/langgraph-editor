@@ -556,7 +556,7 @@ LGraphCanvas.onCompile = function(info, entry, mouse_event) {
             var nextNodeTypes = getNodeValues(g, nodeOrderId, "next", "type");
 
             var currNodeName = g.nodes[nodeOrderId].properties.name;
-            if (nextNodeNames.length > 0 && nextNodeTypes[0] == "langgraph/LangGraphNode"){
+            if (nextNodeNames.length > 0 && nextNodeTypes[0] != "langgraph/LangGraphConditionalNode"){
                 methodName = "workflow.add_edge";
                 var nextNodeText = getNextNodeText(nextNodeNames[0]);
                 code += `${methodName}("${currNodeName}", ${nextNodeText})\n`
