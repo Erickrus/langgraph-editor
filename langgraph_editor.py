@@ -6,8 +6,10 @@ Copyright 2024 by Hu, Ying-Hao (hyinghao@hotmail.com)
 All rights reserved.
 '''
 
-import sys
+import json
 import os
+import sys
+import tornado
 
 import tornado.httpserver, tornado.ioloop, tornado.options, tornado.web, os.path, random, string
 from tornado.options import define, options
@@ -15,13 +17,63 @@ from tornado.web import StaticFileHandler
 
 
 
-import os
-import tornado
-import json
+class SaveWorkflowHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
+
+    def options(self):
+        # no body
+        self.set_header("Access-Control-Allow-Headers","*")
+        self.set_status(204)
+        self.finish()
+
+    def post(self):
+        data = json.loads(self.get_argument("json"))
+
+        requiredFields = ["workflowName", "workflow"]
+        for requiredField in requiredFields:
+            if requiredField not in data:
+                self.set_status(400)
+                return self.finish(json.dumps({"error":"Missing data. Required JSON fields: %s" % ", ".join(requiredFields)}))
+
+        workflowName = data["workflowName"]
+        workflow = data["workflow"]
+        with open(os.path.join("/content", f"{workflowName}.json"), "w") as f:
+            f.write(json.dumps(workflow, indent=2, ensure_ascii=False))
+
+        self.write({"message":"ok"})
+
+
+class LoadWorkflowHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
+
+    def options(self):
+        # no body
+        self.set_header("Access-Control-Allow-Headers","*")
+        self.set_status(204)
+        self.finish()
+
+    def post(self):
+        data = json.loads(self.get_argument("json"))
+        print(data)
+
+        requiredFields = ["workflowName"]
+        for requiredField in requiredFields:
+            if requiredField not in data:
+                self.set_status(400)
+                return self.finish(json.dumps({"error":"Missing data. Required JSON fields: %s" % ", ".join(requiredFields)}))
+
+        workflowName = data["workflowName"]
+        with open(os.path.join("/content", f"{workflowName}.json"), "r") as f:
+            workflow = json.loads(f.read())
+
+        self.write({"message":"ok", "workflow": workflow})
+
 
 class CodeHandler(tornado.web.RequestHandler):
-
-
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
@@ -60,6 +112,8 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"^/api/saveCode", CodeHandler),
+            (r"^/api/saveWorkflow", SaveWorkflowHandler),
+            (r"^/api/loadWorkflow", LoadWorkflowHandler),
             (r'/(favicon.ico)', tornado.web.StaticFileHandler, {"path": os.path.join(".", "static")}),
             (r'^/static/(.*?)$', 
              NoCacheStaticFileHandler, 
