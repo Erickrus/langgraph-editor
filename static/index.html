@@ -74,6 +74,35 @@ function LitegraphApi() {
             'json'
         );
     };
+    this.saveWorkflow = function(workflowName) {
+        console.log("LitegraphApi.saveWorkflow()");
+        $.post(
+            '/api/saveWorkflow',
+            {
+                "json": JSON.stringify({"workflow": graph.serialize(), "workflowName": workflowName})
+            },
+            function(returnedData) {
+                console.log("LitegraphApi.saveWorkflow.response()");
+                console.log(returnedData)
+            },
+            'json'
+        );
+    };
+    this.loadWorkflow = function(workflowName) {
+        console.log("LitegraphApi.loadWorkflow()");
+        $.post(
+            '/api/loadWorkflow',
+            {
+                "json": JSON.stringify({"workflowName": workflowName})
+            },
+            function(returnedData) {
+                console.log("LitegraphApi.loadWorkflow.response()");
+                console.log(returnedData)
+                graph.configure(returnedData["workflow"]);
+            },
+            'json'
+        );
+    };
 }
 
 var litegraphApi = new LitegraphApi();
@@ -230,7 +259,7 @@ LiteGraph.registerNodeType("langgraph/LangGraphNode", LangGraphNode);
 //         return "go_false"
 // `
 
-function LangGraphDecisionNode() {
+function LangGraphConditionalNode() {
     LiteGraph.LGraphNode.call(this);
 
     const self = this;
@@ -272,16 +301,16 @@ function LangGraphDecisionNode() {
     //     { multiline: true }
     // );
 
-    this.title = "LangGraphDecision Node";
-    this.desc = "Custom Node with Decision";
+    this.title = "LangGraphConditional Node";
+    this.desc = "Custom Node with Condition";
     // this.size = [320, 120];
     this.additionalOutputs = 2;
     this.additionalInputs = 1;
 }
 
-LangGraphDecisionNode.prototype = Object.create(LiteGraph.LGraphNode.prototype);
+LangGraphConditionalNode.prototype = Object.create(LiteGraph.LGraphNode.prototype);
 
-LangGraphDecisionNode.prototype.addOutputPort = function() {
+LangGraphConditionalNode.prototype.addOutputPort = function() {
     // Increment the number of additional outputs
     this.additionalOutputs++;
 
@@ -293,7 +322,7 @@ LangGraphDecisionNode.prototype.addOutputPort = function() {
     // this.size = [320, 120];
 };
 
-LangGraphDecisionNode.prototype.removeOutputPort = function() {
+LangGraphConditionalNode.prototype.removeOutputPort = function() {
     if (this.additionalOutputs > 2) {
         // Remove the last output port
         this.removeOutput(this.outputs.length - 1);
@@ -306,14 +335,14 @@ LangGraphDecisionNode.prototype.removeOutputPort = function() {
     }
 };
 
-LangGraphDecisionNode.prototype.addInputPort = function() {
+LangGraphConditionalNode.prototype.addInputPort = function() {
     this.additionalInputs++;
     this.addInput("input_" + this.additionalInputs, "StateDict");
     this.configure(this.serialize());
     // this.size = [320, 120];
 };
 
-LangGraphDecisionNode.prototype.removeInputPort = function() {
+LangGraphConditionalNode.prototype.removeInputPort = function() {
     if (this.additionalInputs > 1) {
         this.removeInput(this.inputs.length - 1);
         this.additionalInputs--;
@@ -322,7 +351,7 @@ LangGraphDecisionNode.prototype.removeInputPort = function() {
     }
 };
 
-LangGraphDecisionNode.prototype.onContextMenu = function(menu, options) {
+LangGraphConditionalNode.prototype.onContextMenu = function(menu, options) {
     const self = this;
 
     // Add default menu items for node properties
@@ -353,7 +382,7 @@ LangGraphDecisionNode.prototype.onContextMenu = function(menu, options) {
     }
 };
 
-LiteGraph.registerNodeType("langgraph/LangGraphDecisionNode", LangGraphDecisionNode);
+LiteGraph.registerNodeType("langgraph/LangGraphConditionalNode", LangGraphConditionalNode);
 
 function LangGraphEndNode() {
     LiteGraph.LGraphNode.call(this);
@@ -373,7 +402,7 @@ function LangGraphEndNode() {
     );
 
     this.title = "LangGraph END Node";
-    this.desc = "Custom Node with Decision";
+    this.desc = "END node";
     // this.size = [320, 120];
     this.additionalInputs = 1;
 }
@@ -487,7 +516,14 @@ LGraphCanvas.prototype.getNodeMenuOptions = function(node) {
 
     return options;
 };
-
+LGraphCanvas.onLoadWorkflow = function(info, entry, mouse_event) {
+    litegraphApi.loadWorkflow("workflow");
+    return "";
+}
+LGraphCanvas.onSaveWorkflow = function(info, entry, mouse_event) {
+    litegraphApi.saveWorkflow("workflow");
+    return "";
+}
 
 LGraphCanvas.onCompile = function(info, entry, mouse_event) {
     var g = graph.serialize();
@@ -641,6 +677,8 @@ LGraphCanvas.prototype.getCanvasMenuOptions = function() {
             },
             { content: "Add Group", callback: LGraphCanvas.onGroupAdd },
             { content: "Compile", callback: LGraphCanvas.onCompile},
+            { content: "Load", callback: LGraphCanvas.onLoadWorkflow},
+            { content: "Save", callback: LGraphCanvas.onSaveWorkflow},
             //{ content: "Arrange", callback: that.graph.arrange },
             //{content:"Collapse All", callback: LGraphCanvas.onMenuCollapseAll }
         ];
