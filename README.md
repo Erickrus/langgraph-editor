@@ -1,7 +1,7 @@
 # langgraph editor
 
 This tool is designed to visually edit langgraph workflow. You can open the notebook in google's colab. 
-Below is the interface of the tool. It is based on [litegraph.js](https://github.com/jagenjo/litegraph.js) as its workflow engine. 
+Below is the interface of the tool. It is based on [litegraph.js](https://github.com/jagenjo/litegraph.js) as its workflow engine. You can add, remove, and layout different nodes as you wish, get the workflow as you wish. As it is visualized and editable, it is easier to understanding and modifying.
 
 ## Installation
 ### Local machine
