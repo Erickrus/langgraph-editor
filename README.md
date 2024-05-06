@@ -15,19 +15,20 @@ from langgraph.graph import END, StateGraph
 workflow = StateGraph(GraphState)
 
 # Define the nodes
-workflow.add_node("query1", query1) # query1
+workflow.add_node("query", query) # query
 workflow.add_node("web_search", web_search) # web_search
 
 # Build graph
-workflow.set_entry_point("query1")
 workflow.add_conditional_edge(
-    "query1",
-    grader,
+    "query",
+    decide,
     {
-        "end": END, 
-        "web_search": "web_search", 
+        "end": END,
+        "web_search": "web_search",
 
     })
+workflow.set_entry_point("query")
+workflow.add_edge("web_search", END)
 
 # Compile
 app = workflow.compile()
