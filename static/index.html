@@ -62,17 +62,21 @@ canvas {
 function LitegraphApi() {
     this.saveCode = function(code) {
         console.log("LitegraphApi.saveCode()");
-        $.post(
-            '/api/saveCode',
-            {
-                "json": JSON.stringify({"code":code})
-            },
-            function(returnedData) {
-                console.log("LitegraphApi.saveCode.response()");
-                console.log(returnedData)
-            },
-            'json'
-        );
+        // Create a new blob object from code
+        var blob = new Blob([code], {type: "text/plain;charset=utf-8"});
+    
+        // Create a link element
+        var element = document.createElement('a');
+    
+        // Create a URL for the blob object
+        element.href = URL.createObjectURL(blob);
+    
+        // Set the download attribute of the link element to the desired file name
+        element.download = "workflow.py";
+    
+        // Programmatically trigger a click on the link to start the download
+        element.click();
+
     };
     this.saveWorkflow = function(workflowName) {
         console.log("LitegraphApi.saveWorkflow()");
